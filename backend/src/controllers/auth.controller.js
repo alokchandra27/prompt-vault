@@ -65,7 +65,44 @@ async function userLogin(req, res) {
   });
 }
 
+async function getUser(req, res) {
+  // console.log(req.user.id);
+
+  const user = await userModel.findById(req.user.id).select("-password");
+
+  res.status(200).json({
+    message: "User Details Fetched Successully",
+    user,
+  });
+}
+
+async function updateUser(req, res) {
+  const userId = req.user.id;
+  const { name } = req.body;
+
+  const user = await userModel.findByIdAndUpdate(
+    userId,
+    { name: name },
+    { new: true },
+  );
+  res.status(200).json({
+    message: "Name updated successfully",
+    user: user,
+  });
+}
+
+function userLogout(req, res) {
+  res.clearCookie("token");
+
+  res.status(200).json({
+    message: "Logged out successfully",
+  });
+}
+
 module.exports = {
   userRegister,
   userLogin,
+  getUser,
+  userLogout,
+  updateUser
 };
