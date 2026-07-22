@@ -9,5 +9,4 @@ route.get("/me" ,authMiddleware, getUser)
 route.post("/logout" ,authMiddleware, userLogout)
 route.patch("/update-name" ,authMiddleware, updateUser)
 
-ai-image-caption-generator
 module.exports = route
