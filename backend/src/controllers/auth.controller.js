@@ -21,9 +21,13 @@ async function userRegister(req, res) {
 
   res.cookie("token", token);
 
+  const safeUser = await userModel
+  .findById(user._id)
+  .select("-password");
+
   res.status(201).json({
     message: "User Registered Successfully",
-    user,
+    user:safeUser,
     token,
   });
 }
@@ -36,7 +40,7 @@ async function userLogin(req, res) {
   });
 
   if (!user) {
-    return res.status(409).json({
+    return res.status(404).json({
       message: "Invalid Username",
     });
   }
@@ -44,7 +48,7 @@ async function userLogin(req, res) {
   const IsPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!IsPasswordValid) {
-    return res.status(409).json({
+    return res.status(401).json({
       message: "Invalid Password",
     });
   }
@@ -59,9 +63,13 @@ async function userLogin(req, res) {
 
   res.cookie("token", token);
 
-  res.status(201).json({
+  const safeUser = await userModel
+  .findById(user._id)
+  .select("-password");
+
+  res.status(200).json({
     message: "User Logged In Successfully",
-    user,
+    user:safeUser,
   });
 }
 
@@ -98,6 +106,8 @@ function userLogout(req, res) {
     message: "Logged out successfully",
   });
 }
+
+
 
 module.exports = {
   userRegister,
