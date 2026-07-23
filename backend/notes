@@ -121,3 +121,29 @@ Community active ki
 
 Toh ye actual startup ban sakta hai
 
+feat: implement core backend for PromptVault (auth + prompt CRUD)
+
+- Added user authentication system (register, login, logout)
+- Implemented JWT-based auth with middleware protection
+- Created User schema with hashed password and validation
+
+- Built Prompt model with fields: title, content, category, tags, user reference
+- Implemented full CRUD for prompts:
+  - Create prompt
+  - Get all prompts (with search, category, tag filters)
+  - Get single prompt by ID
+  - Update prompt (with ownership check)
+  - Delete prompt (with ownership check)
+
+- Added "Get My Prompts" endpoint using authenticated user
+
+- Implemented query-based filtering (search, category, tags)
+- Structured controllers, routes, and models for scalability
+
+- Environment variables configured using dotenv
+- MongoDB connection setup completed
+
+🚧 Pending:
+- AI integration (auto tags / prompt generation)
+- Frontend implementation
+- Deployment & production security improvements
