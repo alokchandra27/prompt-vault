@@ -1,11 +1,14 @@
 const promptModel = require("../models/prompt.model");
+const { generateTags } = require("../services/ai.service");
 
 async function createPrompt(req, res) {
-  const { title, content, category, tags } = req.body;
+  const { title, content, category } = req.body;
 
   if (!title || !content) {
     return res.status(400).json({ message: "All fields are required" });
   }
+
+  const tags = await generateTags(content); // Generate tags based on the content
 
   const prompt = await promptModel.create({
     title,
@@ -15,13 +18,16 @@ async function createPrompt(req, res) {
     user: req.user.id,
   });
 
-  res.status(201).json({ message: "Prompt created successfully", prompt });
+  res.status(201).json({ 
+    message: "Prompt created successfully", 
+    prompt });
 }
 
 async function getAllPrompts(req, res) {
   const { title, category, tags } = req.query;
 
   let filter = {};
+
   if (title) filter.title = { $regex: title, $options: "i" };
   if (category) filter.category = { $regex: category, $options: "i" };
   if (tags) filter.tags = { $regex: tags, $options: "i" };
@@ -55,11 +61,9 @@ async function updatePrompt(req, res) {
   );
 
   if (!prompt)
-    return res
-      .status(404)
-      .json({
-        message: "Prompt not found or you are not authorized to update it",
-      });
+    return res.status(404).json({
+      message: "Prompt not found or you are not authorized to update it",
+    });
 
   res.status(200).json({ message: "Prompt updated successfully", prompt });
 }
@@ -71,11 +75,9 @@ async function deletePrompt(req, res) {
   const prompt = await promptModel.findOneAndDelete({ _id: id, user: userId });
 
   if (!prompt)
-    return res
-      .status(404)
-      .json({
-        message: "Prompt not found or you are not authorized to delete it",
-      });
+    return res.status(404).json({
+      message: "Prompt not found or you are not authorized to delete it",
+    });
 
   res.status(200).json({ message: "Prompt deleted successfully" });
 }
