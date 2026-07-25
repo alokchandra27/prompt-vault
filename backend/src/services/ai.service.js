@@ -20,65 +20,75 @@ const ai = new GoogleGenAI({
 // }
 // run();
 
-async function generatePrompt(userInput) {
+async function generateFullPrompt(userInput) {
     try {
         const response = await ai.interactions.create({
             model: "gemini-2.5-flash",
-            input: `Generate a creative prompt based on the following user input: "\n${userInput}". Please provide a unique and engaging prompt that can inspire users to create content.`,
-            generation_config:{
-                thinking_level: "high",
-                temperature: 0.7,
-            },
-            system_instruction: "Your name is PromptVault. You are a helpful assistant that generates creative prompts based on user input.",
+            input: `Based on the following user input: "${userInput}", generate:
+1. Title
+2. Content
+3. Tags (array)
+4. Category
+
+Return ONLY JSON.`,
         });
-        return response.output_text;
-    }
-    catch (error) {
-        console.error("Error generating prompt:", error);
-        throw new Error("Failed to generate prompt");
+
+        const text = response.output_text;
+
+        // ✅ FIX
+        const cleaned = text
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .trim();
+
+        const parsed = JSON.parse(cleaned);
+
+        return parsed;
+
+    } catch (error) {
+        console.error("Error generating full prompt:", error);
+        throw new Error("Failed to generate full prompt");
     }
 }
-
 async function generateTags(promptContent) {
-    try {
-        const response = await ai.interactions.create({
-            model: "gemini-2.5-flash",
-            input: `Generate relevant tags for the following prompt content: "${promptContent}". Please provide a list of tags that are concise, descriptive, and relevant to the content.`,
-            generation_config:{
-                thinking_level: "high",
-                temperature: 0.7,
-            },
-            system_instruction: "Your name is PromptVault. You are a helpful assistant that generates relevant tags for prompt content.",
-        });
-        return response.output_text.split(",").map(tag => tag.trim());
-    }catch (error) {
-        console.error("Error generating tags:", error);
-        throw new Error("Failed to generate tags");
-    }
+  try {
+    const response = await ai.interactions.create({
+      model: "gemini-2.5-flash",
+      input: `Generate relevant tags for the following prompt content: "${promptContent}". Please provide a list of tags that are concise, descriptive, and relevant to the content.`,
+      generation_config: {
+        thinking_level: "high",
+        temperature: 0.7,
+      },
+      system_instruction:
+        "Your name is PromptVault. You are a helpful assistant that generates relevant tags for prompt content.",
+    });
+    return response.output_text.split(",").map((tag) => tag.trim());
+  } catch (error) {
+    console.error("Error generating tags:", error);
+    throw new Error("Failed to generate tags");
+  }
 }
-
 async function improveContent(promptContent) {
-    try {
-        const response = await ai.interactions.create({
-            model: "gemini-2.5-flash",
-            input: `Improve the following prompt content: "${promptContent}". Please enhance the clarity, creativity, and engagement of the content while maintaining its original intent.`,
-            generation_config:{
-                thinking_level: "high",
-                temperature: 0.7,
-            },
-            system_instruction: "Your name is PromptVault. You are a helpful assistant that generates creative prompts based on content.",
-        });
-        return response.output_text;
-    }
-    catch (error) {
-        console.error("Error improving content:", error);
-        throw new Error("Failed to improve content");
-    }
+  try {
+    const response = await ai.interactions.create({
+      model: "gemini-2.5-flash",
+      input: `Improve the following prompt and also suggest better title and tags.
+
+Return JSON:
+{
+  "title": "...",
+  "content": "...",
+  "tags": ["..."]
 }
 
-export  {
-    generatePrompt,
-    generateTags,
-    improveContent
-};
+Prompt:
+"${promptContent}"`,
+    });
 
+    return JSON.parse(response.output_text);
+  } catch (error) {
+    console.error("Error improving content:", error);
+    throw new Error("Failed to improve content");
+  }
+}
+export { generateFullPrompt, generateTags, improveContent };
