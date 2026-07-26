@@ -12,7 +12,7 @@ const promptSchema = new mongoose.Schema(
     },
     category: {
         type: String,
-        enum:  ["Marketing", "Coding", "Design", "Writing","Instagram", "Other"],
+        enum:  ["Fitness","Motivation", "Marketing", "Coding", "Design", "Writing","Instagram", "Other"],
         default: "Other"
     },
     tags: [
@@ -20,6 +20,10 @@ const promptSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    isPublic: {
+      type: Boolean,
+      default: false
+    },
      user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",

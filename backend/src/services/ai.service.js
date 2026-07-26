@@ -21,34 +21,41 @@ const ai = new GoogleGenAI({
 // run();
 
 async function generateFullPrompt(userInput) {
-    try {
-        const response = await ai.interactions.create({
-            model: "gemini-2.5-flash",
-            input: `Based on the following user input: "${userInput}", generate:
-1. Title
-2. Content
-3. Tags (array)
-4. Category
+  const allowedCategories = ["Fitness","Motivation", "Marketing", "Coding", "Design", "Writing","Instagram", "Other"];
+  try {
+    const response = await ai.interactions.create({
+      model: "gemini-2.5-flash",
+      input: `Based on the following user input: "${userInput}", generate details.
+Choose the category STRICTLY from this list only: ${allowedCategories.join(', ')}.
 
-Return ONLY JSON.`,
-        });
+Return ONLY a valid JSON object with EXACTLY these keys:
+{
+  "title": "Generated title here",
+  "content": "Generated content here",
+  "tags": ["tag1", "tag2"],
+  "category": "Choose one from the allowed list"
+}
+Do not include any extra text or markdown code blocks if possible.`,
+    });
 
-        const text = response.output_text;
+    const text = response.output_text;
 
-        // ✅ FIX
-        const cleaned = text
-            .replace(/```json/g, "")
-            .replace(/```/g, "")
-            .trim();
+    // Markdown ticks clean karne ka secure tarika
+    const cleaned = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
 
-        const parsed = JSON.parse(cleaned);
+    const parsed = JSON.parse(cleaned);
+    
+    // Debugging ke liye check kar sakte hain
+    console.log("Parsed AI Output:", parsed);
 
-        return parsed;
-
-    } catch (error) {
-        console.error("Error generating full prompt:", error);
-        throw new Error("Failed to generate full prompt");
-    }
+    return parsed; // Isme ab { title, content, tags, category } exact match honge
+  } catch (error) {
+    console.error("Error generating full prompt:", error);
+    throw new Error("Failed to generate full prompt");
+  }
 }
 async function generateTags(promptContent) {
   try {
@@ -72,20 +79,33 @@ async function improveContent(promptContent) {
   try {
     const response = await ai.interactions.create({
       model: "gemini-2.5-flash",
-      input: `Improve the following prompt and also suggest better title and tags.
+      input: `Improve the following prompt and also suggest a better title and tags.
 
-Return JSON:
+Return ONLY a valid JSON object with EXACTLY these keys and no extra text:
 {
   "title": "...",
   "content": "...",
-  "tags": ["..."]
+  "tags": ["...", "..."]
 }
 
 Prompt:
 "${promptContent}"`,
+      generation_config: {
+        thinking_level: "high",
+        temperature: 0.7,
+      },
+      system_instruction:"Keep the content concise, clear,crispy , punching and engaging. Suggest a title that captures the essence of the prompt. Generate tags that are relevant and descriptive.",
     });
 
-    return JSON.parse(response.output_text);
+    const text = response.output_text;
+
+    // ✅ Markdown ticks ko clean karein (jaise generateFullPrompt mein kiya tha)
+    const cleaned = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    return JSON.parse(cleaned);
   } catch (error) {
     console.error("Error improving content:", error);
     throw new Error("Failed to improve content");

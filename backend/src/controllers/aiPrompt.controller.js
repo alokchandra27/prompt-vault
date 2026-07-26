@@ -1,10 +1,10 @@
-import { generateFullPrompt, improveContent } from "../services/ai.service.js";
-import promptModel from "../models/prompt.model.js";
+const promptModel = require("../models/prompt.model");
+const { generateFullPrompt, improveContent } = require("../services/ai.service");
 
 // 🔵 GENERATE + SAVE
-export async function generatePromptController(req, res) {
+async function generatePromptController(req, res) {
     try {
-        const { userInput } = req.body;
+        const { userInput, isPublic } = req.body;
 
         if (!userInput) {
             return res.status(400).json({ error: "User input required" });
@@ -17,6 +17,7 @@ export async function generatePromptController(req, res) {
             content: aiData.content,
             category: aiData.category,
             tags: aiData.tags,
+            isPublic: isPublic || false, // agar user ne isPublic nahi diya to default false hoga
             user: req.user.id
         });
 
@@ -33,7 +34,7 @@ export async function generatePromptController(req, res) {
 
 
 // 🟣 IMPROVE (NO SAVE)
-export async function improvePromptController(req, res) {
+async function improvePromptController(req, res) {
     try {
         const { content } = req.body;
 
@@ -53,3 +54,8 @@ export async function improvePromptController(req, res) {
         res.status(500).json({ error: "Improve failed" });
     }
 }
+
+module.exports = {
+    generatePromptController,
+    improvePromptController
+};

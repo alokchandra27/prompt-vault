@@ -8,6 +8,7 @@ const {
   updatePrompt,
   deletePrompt,
   getMyPrompts,
+  getPublicPromptByIdForShare,
 } = require("../controllers/prompt.controller");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -18,6 +19,7 @@ route.get("/me", authMiddleware, getMyPrompts);
 route.get("/:id", authMiddleware, getPromptById);
 route.patch("/:id", authMiddleware, updatePrompt);
 route.delete("/:id", authMiddleware, deletePrompt);
+route.get("/public/:id", getPublicPromptByIdForShare);
 
 
 module.exports = route;
