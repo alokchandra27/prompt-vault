@@ -2,11 +2,10 @@
 import { ArrowRight, Lock, Mail, User } from "lucide-react";
 import React, { useState } from "react";
 import API from "../api/AxiosConfig"
-// import axios from "axios";
-// import { toast, ToastContainer } from "react-toastify";
-// import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 const Auth = () => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   // const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
 
@@ -28,18 +27,18 @@ const Auth = () => {
         withCredentials: true,
       });
       console.log(response.data);
-      // toast.success(response.data.message);
-      // navigate("/dashboard");
+      toast.success(response.data.message);
+      navigate("/dashboard");
     } catch (error) {
       console.error(error);
-      // toast.error(error.response.data.message || "An error occurred");
+      toast.error(error.response.data.message || "An error occurred");
     }
     
   }
 
   return (
     <div
-      className=" text-black w-full flex justify-center items-center p-4"
+      className=" text-black w-full h-full flex justify-center items-center p-4"
       style={{
         backgroundImage: "url('/photo-1513002749550-c59d786b8e6c.avif')",
         backgroundSize: "cover",
@@ -71,10 +70,6 @@ const Auth = () => {
           <p className= "text-gray-500 mt-2 text-sm mb-6">
             {isLogin ? 'Enter your details to access your vault' : 'Start managing and sharing your prompts with ease'}
             </p>
-       
-          
-
-
 
           <form onSubmit={(e)=>{
             submitHandler(e)

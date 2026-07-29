@@ -4,7 +4,7 @@ import Nav from './components/Navbar/Nav'
 
 const App = () => {
   return (
-    <div className='bg-[#F4F2F2] text-white min-h-screen flex'>
+    <div className='bg-[#F4F2F2] text-white min-h-screen flex flex-col'>
    
       <Nav/>
       <MainRoutes/>

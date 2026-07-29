@@ -1,42 +1,60 @@
 import React from 'react';
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Database, Users, Users2, Settings } from "lucide-react";
+import { LayoutDashboard, Database, Users2, Settings } from "lucide-react";
 
 const ComponentsList = () => {
   return (
     <div className="flex flex-col gap-5">
       <ul className="flex flex-col gap-5 pl-14 text-lg font-medium uppercase">
+        
         <NavLink
-          className="flex items-center gap-4 bg-amber-400 hover:bg-[#e5ebeb] py-2 rounded-md cursor-pointer transition"
           to="/"
+          className={({ isActive }) => 
+            `flex items-center w-full gap-4 py-2 px-3 rounded-l-full cursor-pointer transition ${
+              isActive ? "bg-[#e5ebeb] text-black" : "hover:bg-[#203A3E] text-white"
+            }`
+          }
         >
-          <LayoutDashboard color="#fbf323"  size={20} /> 
+          <LayoutDashboard color="#fbf323" size={20} /> 
           Dashboard
         </NavLink>
 
         <NavLink
-          className="flex items-center gap-3 hover:bg-[#203A3E] p-2 rounded-md cursor-pointer transition"
           to="/myvault"
+          className={({ isActive }) => 
+            `flex items-center gap-3 py-2 px-3 rounded-l-full  cursor-pointer transition-all ${
+               isActive ? "bg-[#e5ebeb] text-black" : "hover:bg-[#203A3E] text-white"
+            }`
+          }
         >
           <Database color="#fbf323" size={20} />
           MyVault
         </NavLink>
 
         <NavLink
-          className="flex items-center gap-3 hover:bg-[#203A3E] p-2 rounded-md cursor-pointer transition"
           to="/community"
+          className={({ isActive }) => 
+            `flex items-center gap-3 py-2 px-3 rounded-l-full  cursor-pointer transition ${
+               isActive ? "bg-[#e5ebeb] text-black" : "hover:bg-[#203A3E] text-white"
+            }`
+          }
         >
           <Users2 color="#fbf323" size={20} />
           Community
         </NavLink>
 
         <NavLink
-          className="flex items-center gap-3 hover:bg-[#284b50] p-2 rounded-md cursor-pointer transition"
           to="/auth"
+          className={({ isActive }) => 
+            `flex items-center gap-3 py-2 px-3 rounded-l-full  cursor-pointer transition ${
+               isActive ? "bg-[#e5ebeb] text-black" : "hover:bg-[#203A3E] text-white"
+            }`
+          }
         >
           <Settings color="#fbf323" size={20} />
           Login / Register
         </NavLink>
+
       </ul>
     </div>
   );
