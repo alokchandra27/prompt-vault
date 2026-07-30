@@ -4,6 +4,7 @@ import MyVault from '../Pages/MyVault'
 import Community from '../Pages/Community'
 import Dashboard from '../Pages/Dashboard'
 import Auth from '../Pages/Auth'
+import PromptDetail from '../Pages/PromptDetail'
 
 const MainRoutes = () => {
   return (
@@ -13,6 +14,7 @@ const MainRoutes = () => {
             <Route path="/myvault" element={<MyVault/>} />
             <Route path="/community" element={<Community/>} />
             <Route path="/auth" element={<Auth/>} />
+            <Route path="/prompt/:id" element={<PromptDetail/>} />
         </Routes>
     </div>
   )

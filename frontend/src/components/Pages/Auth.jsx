@@ -28,7 +28,7 @@ const Auth = () => {
       });
       console.log(response.data);
       toast.success(response.data.message);
-      navigate("/dashboard");
+      navigate("/");
     } catch (error) {
       console.error(error);
       toast.error(error.response.data.message || "An error occurred");

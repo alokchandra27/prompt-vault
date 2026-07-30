@@ -20,7 +20,7 @@ app.use(cors({
 app.use("/api/auth",authRoutes)
 app.use("/api/prompts", promptRoutes)
 app.use("/api/ai", aiRoutes);
-app.use("/api/export", exportRoutes); ;
+app.use("/api/export", exportRoutes); 
 
 
 module.exports = app;

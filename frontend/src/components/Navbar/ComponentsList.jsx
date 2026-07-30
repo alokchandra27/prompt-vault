@@ -11,7 +11,7 @@ const ComponentsList = () => {
           to="/"
           className={({ isActive }) => 
             `flex items-center w-full gap-4 py-2 px-3 rounded-l-full cursor-pointer transition ${
-              isActive ? "bg-[#e5ebeb] text-black" : "hover:bg-[#203A3E] text-white"
+              isActive ? "bg-[#e5ebeb] text-black " : "hover:bg-[#203A3E] text-white"
             }`
           }
         >
