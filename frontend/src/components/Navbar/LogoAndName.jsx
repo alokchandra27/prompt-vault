@@ -1,16 +1,26 @@
-import { NotepadText } from 'lucide-react'
 import React from 'react'
+import { NotepadText } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const LogoAndName = () => {
-  return (
-    <div className='flex flex-row items-center  pb-4 mt-auto'>
-        <div className='flex flex-row gap-2 items-center  '>
-        <div className='svg-container pl-10 '></div>
-         {/* <svg className='' fill="#FFFFFF" height="50px"version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="-36 -36 432.00 432.00" xmlSpace="preserve" transform="rotate(0)"><g id="SVGRepo_bgCarrier"></g><g id="SVGRepo_tracerCarrier" id="SVGRepo_iconCarrier"> <g id="XMLID_89_"> <path id="XMLID_90_" d="M344.829,124.238h-49.658V77.834L212.148,0H15.171v360h280v-53.034h49.658V124.238z M314.829,276.966h-210 V154.238h210V276.966z"></path> <path id="XMLID_93_" d="M127.858,234.324c2.79,3.16,6.118,5.72,9.982,7.682c3.864,1.964,8.127,2.944,12.788,2.944 c2.636,0,5.336-0.337,8.096-1.012c2.76-0.674,5.35-1.656,7.774-2.944c2.422-1.288,4.6-2.867,6.532-4.738 c1.932-1.87,3.418-4.032,4.462-6.486l-10.396-5.98c-0.736,1.779-1.718,3.297-2.944,4.554c-1.228,1.258-2.562,2.286-4.002,3.082 c-1.442,0.798-2.96,1.38-4.554,1.748c-1.595,0.368-3.128,0.552-4.6,0.552c-2.822,0-5.414-0.612-7.774-1.84 c-2.362-1.226-4.386-2.852-6.072-4.876c-1.688-2.024-2.99-4.37-3.91-7.038c-0.92-2.669-1.38-5.442-1.38-8.326 c0-2.576,0.398-5.166,1.196-7.774c0.796-2.607,1.978-4.937,3.542-6.992c1.564-2.054,3.526-3.726,5.888-5.014 c2.36-1.288,5.136-1.932,8.326-1.932c1.472,0,2.974,0.169,4.508,0.506c1.533,0.338,3.004,0.874,4.416,1.61 c1.41,0.736,2.729,1.734,3.956,2.99c1.226,1.258,2.268,2.806,3.128,4.646l9.752-6.716c-2.148-4.232-5.414-7.666-9.798-10.304 c-4.386-2.636-9.584-3.956-15.594-3.956c-5.091,0-9.629,0.952-13.616,2.852c-3.988,1.902-7.36,4.386-10.12,7.452 c-2.76,3.067-4.861,6.547-6.302,10.442c-1.442,3.895-2.162,7.836-2.162,11.822c0,4.172,0.782,8.266,2.346,12.282 C122.89,227.578,125.066,231.165,127.858,234.324z"></path> <path id="XMLID_102_" d="M191.567,234.968c2.268,2.976,5.228,5.368,8.878,7.176c3.648,1.81,8.08,2.714,13.294,2.714 c5.028,0,9.353-0.858,12.972-2.576c3.618-1.716,6.578-4.048,8.878-6.992c2.3-2.944,3.986-6.378,5.06-10.304 c1.072-3.924,1.61-8.126,1.61-12.604v-33.304h-12.604v33.304c0,2.7-0.262,5.322-0.782,7.866c-0.521,2.546-1.412,4.8-2.668,6.762 c-1.258,1.964-2.914,3.558-4.968,4.784c-2.056,1.228-4.585,1.84-7.59,1.84c-2.944,0-5.428-0.598-7.452-1.794 c-2.024-1.196-3.666-2.774-4.922-4.738c-1.258-1.962-2.148-4.216-2.668-6.762c-0.522-2.544-0.782-5.198-0.782-7.958v-33.304 h-12.696v33.304c0,4.232,0.506,8.312,1.517,12.236C187.657,228.544,189.297,231.994,191.567,234.968z"></path> <polygon id="XMLID_103_" points="300.403,233.266 267.743,233.266 267.743,216.246 295.251,216.246 295.251,205.942 267.743,205.942 267.743,190.21 299.575,190.21 299.575,179.078 255.047,179.078 255.047,244.398 300.403,244.398 "></polygon> </g> </g></svg> */}
+  const navigate = useNavigate();
 
-         <NotepadText size={30} />
-        <h1 className=' text-2xl font-bold'>PromptVault</h1>
-     </div>
+  return (
+    <div 
+      onClick={() => navigate('/')}
+      className='flex flex-row items-center pb-4 mt-auto cursor-pointer group px-4 py-2 rounded-2xl hover:bg-white/50 transition-all duration-300'
+    >
+      <div className='flex flex-row gap-3 items-center'>
+        {/* Icon with gradient/accent background */}
+        <div className='h-10 w-10 bg-amber-50 rounded-xl flex items-center justify-center text-[#FF9E20] shadow-sm group-hover:scale-105 group-hover:bg-[#FF9E20] group-hover:text-white transition-all duration-300'>
+          <NotepadText size={22} />
+        </div>
+        
+        {/* Logo Text */}
+        <h1 className='text-xl font-extrabold text-[#1c7583] tracking-tight group-hover:text-[#FF9E20] transition-colors duration-300'>
+          Prompt<span className='text-[#FF9E20] group-hover:text-[#203A3E] transition-colors'>Vault</span>
+        </h1>
+      </div>
     </div>
   )
 }

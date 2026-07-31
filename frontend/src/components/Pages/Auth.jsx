@@ -52,7 +52,7 @@ const Auth = () => {
           <div className="bg-emerald-700 h-full rounded-2xl overflow-hidden">
             <img
               className="h-full w-full object-cover"
-              src="https://i.pinimg.com/736x/4d/7e/36/4d7e36285ead0faa242150a353418322.jpg"
+              src="https://i.pinimg.com/1200x/6e/6f/ab/6e6fabb9dc098efb68ad1d01846d5f59.jpg"
               alt="Register Visual"
             />
           </div>

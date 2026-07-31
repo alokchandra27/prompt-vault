@@ -1,18 +1,17 @@
-import React, { useState } from 'react';
-import API from '../api/AxiosConfig';
-import { Sparkles, Bot, Send, Globe, Lock } from 'lucide-react';
-import { toast } from 'react-toastify';
+import React, { useState } from "react";
+import API from "../api/AxiosConfig";
+import { Sparkles, Bot, Send, Globe } from "lucide-react";
+import { toast } from "react-toastify";
 
 const CreatePromptForm = ({ onPromptCreated }) => {
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
 
-  // Optional AI Assist ke liye temporary state (agar content/title pre-fill karna ho)
-  const [aiContent, setAiContent] = useState('');
-  const [aiTitle, setAiTitle] = useState('');
-  const [aiCategory, setAiCategory] = useState('');
+  // Sirf AI assist ke liye states rakhi hain taaki typing smooth chale
+  const [aiContent, setAiContent] = useState("");
+  const [aiTitle, setAiTitle] = useState("");
 
-  // Optional: AI se help lene ke liye
+  // AI Assist optional helper
   const handleAIAssist = () => {
     if (!aiTitle) {
       toast.warning("Pehle title likho, tabhi AI content generate karega!");
@@ -20,8 +19,9 @@ const CreatePromptForm = ({ onPromptCreated }) => {
     }
     setAiLoading(true);
     setTimeout(() => {
-      setAiContent(`Expert prompt structure for "${aiTitle}":\n1. Role: Act as an expert.\n2. Context: Provide accurate results.\n3. Output format: Clean and structured.`);
-      setAiCategory("General");
+      setAiContent(
+        `Expert prompt structure for "${aiTitle}":\n1. Role: Act as an expert.\n2. Context: Provide accurate results.\n3. Output format: Clean and structured.`
+      );
       setAiLoading(false);
       toast.success("AI generated content successfully!");
     }, 1000);
@@ -32,28 +32,26 @@ const CreatePromptForm = ({ onPromptCreated }) => {
     e.preventDefault();
     setLoading(true);
 
-    // Form se saara data directly nikal liya
     const data = new FormData(e.target);
-    
+
     const payload = {
-      title: data.get('title'),
-      content: data.get('content'),
-      category: data.get('category'),
-      isPublic: data.get('isPublic') === 'on' // Checkbox handling
+      title: data.get("title"),
+      content: data.get("content"),
+      category: data.get("category"), // Select dropdown se direct value uthegi
+      isPublic: data.get("isPublic") === "on", // Checkbox handling
     };
 
     try {
-      const response = await API.post('/api/prompts', payload, { withCredentials: true });
+      const response = await API.post("/api/prompts", payload, {
+        withCredentials: true,
+      });
       toast.success(response.data.message || "Prompt created successfully!");
-      
-      // Form reset
+
       e.target.reset();
-      setAiContent('');
-      setAiTitle('');
-      setAiCategory('');
+      setAiContent("");
+      setAiTitle("");
 
       if (onPromptCreated) onPromptCreated();
-      
     } catch (error) {
       console.error("Error creating prompt:", error);
       toast.error(error.response?.data?.message || "Failed to create prompt.");
@@ -77,7 +75,6 @@ const CreatePromptForm = ({ onPromptCreated }) => {
           </p>
         </div>
 
-        {/* AI Assist Button */}
         <button
           type="button"
           onClick={handleAIAssist}
@@ -91,11 +88,13 @@ const CreatePromptForm = ({ onPromptCreated }) => {
 
       {/* Main Form */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
           {/* Title Field */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-gray-600">Title <span className="text-red-500">*</span></label>
+            <label className="text-xs font-bold text-gray-600">
+              Title <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="title"
@@ -107,23 +106,32 @@ const CreatePromptForm = ({ onPromptCreated }) => {
             />
           </div>
 
-          {/* Category Field */}
+          {/* Category Field (Matching Schema Enum Values Exactly) */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-gray-600">Category</label>
-            <input
-              type="text"
+            <select
               name="category"
-              placeholder="e.g. Marketing, Coding, Writing"
-              value={aiCategory}
-              onChange={(e) => setAiCategory(e.target.value)}
-              className="bg-gray-100 h-12 rounded-xl px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-[#FF9E20]"
-            />
+              defaultValue="Other"
+              className="bg-gray-100 h-12 rounded-xl px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-[#FF9E20] cursor-pointer"
+            >
+              <option value="Fitness">Fitness</option>
+              <option value="Motivation">Motivation</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Coding">Coding</option>
+              <option value="Design">Design</option>
+              <option value="Writing">Writing</option>
+              <option value="Instagram">Instagram</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
+
         </div>
 
         {/* Content Field */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-gray-600">Content <span className="text-red-500">*</span></label>
+          <label className="text-xs font-bold text-gray-600">
+            Content <span className="text-red-500">*</span>
+          </label>
           <textarea
             name="content"
             rows={4}
@@ -137,8 +145,6 @@ const CreatePromptForm = ({ onPromptCreated }) => {
 
         {/* Footer options: Public/Private checkbox & Submit button */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-2">
-          
-          {/* Public / Private Toggle Checkbox */}
           <label className="flex items-center gap-3 cursor-pointer bg-gray-50 px-4 py-3 rounded-xl border border-gray-200 w-full md:w-auto">
             <input
               type="checkbox"
@@ -151,7 +157,6 @@ const CreatePromptForm = ({ onPromptCreated }) => {
             </div>
           </label>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -160,9 +165,7 @@ const CreatePromptForm = ({ onPromptCreated }) => {
             <Send size={16} />
             <span>{loading ? "Creating..." : "Save Prompt"}</span>
           </button>
-
         </div>
-
       </form>
     </div>
   );

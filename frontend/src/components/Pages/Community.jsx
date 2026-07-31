@@ -1,41 +1,32 @@
-import { Sparkles, Search, Trash2, Edit3 } from "lucide-react";
+import { Sparkles, Search, FileCode, FileText, Download } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import API from "../api/AxiosConfig";
+import { handlePromptExport } from "../Pages/handelPromptExport"; // Helper import
 
 const Community = () => {
   const navigate = useNavigate();
-  
-  // Yahan aap apna state aur fetch logic khud likh lena (e.g., useState, useEffect)
   const [prompts, setPrompts] = useState([]);
-
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Filter logic (Aap chahein toh ise modify kar sakte hain)
   const filteredPrompts = prompts.filter((prompt) =>
     prompt.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-
-  
-  useEffect(()=>{
-    try {
-      const fetchCommunityPrompts = async () => {
+  useEffect(() => {
+    const fetchCommunityPrompts = async () => {
+      try {
         const response = await API.get("/api/prompts", { withCredentials: true });
         setPrompts(response.data.prompts);
-        toast.success("Community prompts fetched successfully!");
-      }
-      fetchCommunityPrompts();
-
-    }
-      catch (error) {
+        // toast.success("Community prompts fetched successfully!");
+      } catch (error) {
         console.error("Error fetching community prompts:", error);
         toast.error("Failed to fetch community prompts.");
       }
-
-    }, []);
-
+    };
+    fetchCommunityPrompts();
+  }, []);
 
 
   return (
@@ -47,7 +38,7 @@ const Community = () => {
           <Search size={18} className="text-gray-400" />
           <input
             type="text"
-            placeholder="Search your saved vaults..."
+            placeholder="Search community prompts..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="bg-transparent w-full text-sm font-medium outline-none"
@@ -66,14 +57,14 @@ const Community = () => {
       {/* Header & Results Count */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold text-[#203A3E] uppercase tracking-wide">
-          My Saved Vault ({filteredPrompts.length})
+          Community Prompts ({filteredPrompts.length})
         </h2>
       </div>
 
       {/* Prompt List Cards */}
       <div className="flex flex-col gap-4">
         {filteredPrompts.length === 0 ? (
-          <div className="text-center py-10 text-gray-400 font-semibold">No saved prompts found in your vault.</div>
+          <div className="text-center py-10 text-gray-400 font-semibold">No community prompts found.</div>
         ) : (
           filteredPrompts.map((prompt) => (
             <div
@@ -92,11 +83,29 @@ const Community = () => {
                 </h3>
               </div>
 
-              {/* Action Buttons (Aap yahan apna onDelete / onUpdate logic lagana) */}
-              <div className="flex items-center gap-3">
+              {/* Action Buttons (View Details + Export Options) */}
+              <div className="flex items-center flex-wrap gap-2">
+                <button
+                  onClick={() => handlePromptExport(prompt._id, "json", true, prompt.title)}
+                  className="h-10 px-3 bg-gray-100 hover:bg-gray-200 text-[#203A3E] rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                >
+                  <FileCode size={14} /> JSON
+                </button>
+                <button
+                  onClick={() => handlePromptExport(prompt._id, "md", true, prompt.title)}
+                  className="h-10 px-3 bg-gray-100 hover:bg-gray-200 text-[#203A3E] rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                >
+                  <FileText size={14} /> MD
+                </button>
+                <button
+                 onClick={() => handlePromptExport(prompt._id, "pdf", true, prompt.title)}
+                  className="h-10 px-3 bg-[#FF9E20] hover:bg-[#e88d15] text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-sm"
+                >
+                  <Download size={14} /> PDF
+                </button>
                 <button 
                   onClick={() => navigate(`/prompt/${prompt._id}`)}
-                  className="h-10 px-4 bg-gray-100 text-[#203A3E] rounded-xl text-sm font-bold hover:bg-gray-200 transition cursor-pointer"
+                  className="h-10 px-4 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-black transition cursor-pointer"
                 >
                   View Details
                 </button>
