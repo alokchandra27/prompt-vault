@@ -17,13 +17,11 @@ const PromptDetail = () => {
   useEffect(() => {
     const fetchPromptDetails = async () => {
       try {
+        // Pehle protected vault route try karein
         const response = await API.get(`/api/prompts/${id}`, { withCredentials: true });
-        console.log(response.data);
-        
         const fetchedPrompt = response.data.prompt;
         setPromptData(fetchedPrompt);
         
-        // Form state ko initial data se pre-fill karna
         setFormData({
           title: fetchedPrompt.title || '',
           content: fetchedPrompt.content || fetchedPrompt.description || '',
@@ -33,6 +31,26 @@ const PromptDetail = () => {
         toast.success("Prompt details fetched successfully!");
       } catch (error) {
         console.error("Error fetching prompt details:", error);
+        
+        // Agar 401 aaye, toh ho sakta hai yeh community prompt ho (non-auth)
+        if (error.response && error.response.status === 401) {
+          try {
+            // Community public endpoint try karein (Aap apne backend ke hisaab se URL change kar sakte hain, e.g., /api/community or /api/prompts/public)
+            const publicResponse = await API.get(`/api/prompts/public/${id}`);
+            const fetchedPrompt = publicResponse.data.prompt || publicResponse.data;
+            setPromptData(fetchedPrompt);
+            
+            setFormData({
+              title: fetchedPrompt.title || '',
+              content: fetchedPrompt.content || fetchedPrompt.description || '',
+              tags: fetchedPrompt.tags || ''
+            });
+            return;
+          } catch (publicError) {
+            console.error("Public fetch error:", publicError);
+          }
+        }
+
         toast.error("Failed to fetch prompt details.");
       }
     };
@@ -50,13 +68,16 @@ const PromptDetail = () => {
     e.preventDefault();
     try {
       const response = await API.patch(`/api/prompts/${id}`, formData, { withCredentials: true });
-      
-      // Updated data ko state mein reflect karna
       setPromptData(response.data.prompt || formData);
       setIsEditing(false);
       toast.success("Prompt updated successfully!");
     } catch (error) {
       console.error("Error updating prompt:", error);
+      if (error.response && error.response.status === 401) {
+        toast.error("You must be logged in to update prompts.");
+        navigate("/auth");
+        return;
+      }
       toast.error("Failed to update prompt.");
     }
   };
@@ -78,6 +99,11 @@ const PromptDetail = () => {
         navigate('/'); 
       } catch (error) {
         console.error("Error deleting prompt:", error);
+        if (error.response && error.response.status === 401) {
+          toast.error("You must be logged in to delete prompts.");
+          navigate("/auth");
+          return;
+        }
         toast.error("Failed to delete prompt.");
       }
     }
@@ -106,7 +132,7 @@ const PromptDetail = () => {
         {/* Edit & Delete Action Buttons */}
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => setIsEditing(true)} // FIXED: isEditing ki jagah setIsEditing kiya
+            onClick={() => setIsEditing(true)}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow hover:bg-blue-700 transition cursor-pointer"
           >
             <Edit3 size={18} /> Update
@@ -152,7 +178,7 @@ const PromptDetail = () => {
               {copied ? "Copied!" : "Copy Prompt"}
             </button>
           </div>
-          <div className="bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 text-gray-700 font-mono text-sm min-h-37.5whitespace-pre-wrap">
+          <div className="bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 text-gray-700 font-mono text-sm min-h-[150px] whitespace-pre-wrap">
             {promptData.content || promptData.description || "No prompt content available."}
           </div>
         </div>

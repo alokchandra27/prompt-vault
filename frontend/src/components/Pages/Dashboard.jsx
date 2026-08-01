@@ -1,4 +1,4 @@
-import { Sparkles, Bot, ArrowUpRight, FolderKanban, Wand2 } from "lucide-react";
+import { Sparkles, Bot, ArrowUpRight, FolderKanban, Wand2, Zap } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/AxiosConfig";
@@ -10,9 +10,15 @@ const Dashboard = () => {
   const [promptTitle, setPromptTitle] = useState("");
   const [generatedContent, setGeneratedContent] = useState("");
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false); // Save button ke liye alag state taaki spam na ho
+  const [saving, setSaving] = useState(false);
+  const [improving, setImproving] = useState(false);
 
-  // AI Prompt Generation Handler
+  // States for standalone Quick Improve Box
+  const [customInput, setCustomInput] = useState("");
+  const [improvedCustomContent, setImprovedCustomContent] = useState("");
+  const [customImproving, setCustomImproving] = useState(false);
+
+  // 1. AI Prompt Generation Handler (Connected with Real Backend API)
   const handleGenerateAI = async () => {
     if (!promptTitle.trim()) {
       toast.warning("Please enter a topic or title first!");
@@ -20,20 +26,29 @@ const Dashboard = () => {
     }
     setLoading(true);
     try {
-      setTimeout(() => {
-        setGeneratedContent(
-          `Act as an expert prompt engineer. Generate a high-converting, detailed response for: "${promptTitle}". Include best practices, structured headings, and actionable outputs.`
-        );
-        setLoading(false);
-        toast.success("AI Prompt generated successfully!");
-      }, 1200);
+      const response = await API.post("/api/ai/generate", { 
+        userInput: promptTitle,
+        isPublic: false 
+      }, { 
+        withCredentials: true 
+      });
+
+      const fullPrompt = response.data.prompt?.content || response.data.generated || promptTitle;
+      setGeneratedContent(fullPrompt);
+      setLoading(false);
+      toast.success("AI Prompt generated successfully!");
     } catch (error) {
       setLoading(false);
-      toast.error("Failed to generate AI prompt.");
+      if (error.response && error.response.status === 401) {
+        toast.error("You are not authorized. Please log in.");
+        navigate("/auth");
+        return;
+      }
+      toast.error(error.response?.data?.error || "Failed to generate AI prompt.");
     }
   };
 
-  // Save generated prompt to backend with spam prevention
+  // 2. Save generated prompt to backend
   const handleSavePrompt = async () => {
     if (!generatedContent || saving) return;
     setSaving(true);
@@ -50,9 +65,73 @@ const Dashboard = () => {
       setGeneratedContent("");
       navigate("/myvault"); 
     } catch (error) {
+      if (error.response && error.response.status === 401) {
+        toast.error("Session expired. Please log in.");
+        navigate("/auth");
+        return;
+      }
       toast.error("Failed to save prompt.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // 3. Improve Generated Prompt using Backend API (/api/ai/improve)
+  const handleImprovePrompt = async () => {
+    if (!generatedContent || improving) return;
+    setImproving(true);
+    try {
+      toast.info("Improving prompt with AI...");
+      
+      const response = await API.post("/api/ai/improve", { 
+        content: generatedContent 
+      }, { 
+        withCredentials: true 
+      });
+
+      setGeneratedContent(response.data.improved);
+      toast.success("Prompt improved successfully!");
+    } catch (error) {
+      console.error("Improve error:", error);
+      if (error.response && error.response.status === 401) {
+        toast.error("You are not authorized. Please log in.");
+        navigate("/auth");
+        return;
+      }
+      toast.error("Failed to improve prompt.");
+    } finally {
+      setImproving(false);
+    }
+  };
+
+  // 4. Quick Improve for Custom User Input (Standalone Improve API)
+  const handleCustomImprove = async () => {
+    if (!customInput.trim() || customImproving) {
+      toast.warning("Please enter some text to improve!");
+      return;
+    }
+    setCustomImproving(true);
+    try {
+      toast.info("Improving your custom prompt...");
+      
+      const response = await API.post("/api/ai/improve", { 
+        content: customInput 
+      }, { 
+        withCredentials: true 
+      });
+
+      setImprovedCustomContent(response.data.improved);
+      toast.success("Custom prompt improved successfully!");
+    } catch (error) {
+      console.error("Custom improve error:", error);
+      if (error.response && error.response.status === 401) {
+        toast.error("You are not authorized. Please log in.");
+        navigate("/auth");
+        return;
+      }
+      toast.error("Failed to improve custom prompt.");
+    } finally {
+      setCustomImproving(false);
     }
   };
 
@@ -102,16 +181,29 @@ const Dashboard = () => {
             {generatedContent && (
               <div className="flex flex-col gap-1 animate-in fade-in duration-300">
                 <label className="text-[11px] font-bold text-gray-600">Generated Result</label>
-                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-3 text-xs font-mono text-gray-700 max-h-[100px] overflow-y-auto whitespace-pre-wrap">
+                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-3 text-xs font-mono text-gray-700 max-h-[120px] overflow-y-auto whitespace-pre-wrap">
                   {generatedContent}
                 </div>
-                <button
-                  onClick={handleSavePrompt}
-                  disabled={saving}
-                  className="h-10 bg-[#203A3E] text-white rounded-xl font-bold text-xs shadow hover:bg-black transition cursor-pointer self-end px-5 mt-1 disabled:opacity-50 flex items-center gap-1.5"
-                >
-                  <span>{saving ? "Saving to Vault..." : "Save to Vault 🚀"}</span>
-                </button>
+                
+                {/* Action Buttons: Improve with AI & Save to Vault */}
+                <div className="flex justify-between items-center mt-2">
+                  <button
+                    onClick={handleImprovePrompt}
+                    disabled={improving}
+                    className="h-10 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-xl font-bold text-xs transition cursor-pointer px-4 flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    <Sparkles size={14} />
+                    <span>{improving ? "Improving..." : "Improve with AI ✨"}</span>
+                  </button>
+
+                  <button
+                    onClick={handleSavePrompt}
+                    disabled={saving}
+                    className="h-10 bg-[#203A3E] text-white rounded-xl font-bold text-xs shadow hover:bg-black transition cursor-pointer px-5 disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    <span>{saving ? "Saving to Vault..." : "Save to Vault 🚀"}</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -152,6 +244,48 @@ const Dashboard = () => {
           </div>
         </div>
 
+      </div>
+
+      {/* Quick AI Improver Section (Standalone Improve Feature) */}
+      <div className="bg-white rounded-3xl p-5 md:p-6 shadow-sm flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-0.5 rounded-full w-max flex items-center gap-1">
+            <Zap size={12} /> Quick Improver
+          </span>
+          <h2 className="text-lg font-bold text-[#203A3E]">Enhance Any Existing Prompt</h2>
+          <p className="text-xs text-gray-400">
+            Paste your raw or rough prompt below and let the AI polish it into a high-performance prompt.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <textarea
+            rows="3"
+            placeholder="Paste your rough prompt text here..."
+            value={customInput}
+            onChange={(e) => setCustomInput(e.target.value)}
+            disabled={customImproving}
+            className="w-full bg-gray-100 rounded-2xl p-3 text-xs font-medium outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 resize-y"
+          />
+
+          <button
+            onClick={handleCustomImprove}
+            disabled={customImproving}
+            className="h-11 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs transition cursor-pointer self-start px-5 flex items-center gap-2 shadow-sm disabled:opacity-50"
+          >
+            <Sparkles size={16} />
+            <span>{customImproving ? "Polishing Prompt..." : "Improve This Prompt ✨"}</span>
+          </button>
+
+          {improvedCustomContent && (
+            <div className="flex flex-col gap-1 mt-2 animate-in fade-in duration-300">
+              <label className="text-[11px] font-bold text-gray-600">Improved Output</label>
+              <div className="bg-purple-50/50 border border-purple-100 rounded-2xl p-3 text-xs font-mono text-gray-700 max-h-[120px] overflow-y-auto whitespace-pre-wrap">
+                {improvedCustomContent}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Bottom Section: Create Prompt Form */}
