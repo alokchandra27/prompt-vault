@@ -12,12 +12,25 @@ async function generatePromptController(req, res) {
 
         const aiData = await generateFullPrompt(userInput);
 
+        // 🔥 TAGS FORMAT FIX (#coding #ai ...)
+        let formattedTags = [];
+        if (Array.isArray(aiData.tags)) {
+            formattedTags = aiData.tags.map(tag =>
+                tag.startsWith("#") ? tag : `#${tag}`
+            );
+        } else if (typeof aiData.tags === "string") {
+            formattedTags = aiData.tags
+                .split(",")
+                .map(tag => tag.trim())
+                .map(tag => tag.startsWith("#") ? tag : `#${tag}`);
+        }
+
         const newPrompt = await promptModel.create({
             title: aiData.title,
             content: aiData.content,
             category: aiData.category,
-            tags: aiData.tags,
-            isPublic: isPublic || false, // agar user ne isPublic nahi diya to default false hoga
+            tags: formattedTags, // ✅ updated
+            isPublic: isPublic || false,
             user: req.user.id
         });
 

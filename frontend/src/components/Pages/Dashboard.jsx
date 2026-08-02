@@ -13,44 +13,62 @@ const Dashboard = () => {
   const [saving, setSaving] = useState(false);
   const [improving, setImproving] = useState(false);
 
-  // States for standalone Quick Improve Box
   const [customInput, setCustomInput] = useState("");
   const [improvedCustomContent, setImprovedCustomContent] = useState("");
   const [customImproving, setCustomImproving] = useState(false);
 
-  // 1. AI Prompt Generation Handler (Connected with Real Backend API)
+  // 🔥 Generate AI
   const handleGenerateAI = async () => {
     if (!promptTitle.trim()) {
       toast.warning("Please enter a topic or title first!");
       return;
     }
+
     setLoading(true);
     try {
       const response = await API.post("/api/ai/generate", { 
         userInput: promptTitle,
         isPublic: false 
-      }, { 
-        withCredentials: true 
       });
 
-      const fullPrompt = response.data.prompt?.content || response.data.generated || promptTitle;
-      setGeneratedContent(fullPrompt);
-      setLoading(false);
-      toast.success("AI Prompt generated successfully!");
+      const fullPrompt =
+        response.data?.prompt?.content ||
+        response.data?.generated ||
+        "";
+
+      if (!fullPrompt) {
+        toast.error("Empty response from AI");
+        return;
+      }
+
+     if (typeof fullPrompt === "object") {
+  setGeneratedContent(fullPrompt.content || JSON.stringify(fullPrompt));
+} else {
+  setGeneratedContent(fullPrompt);
+}
+
+      // ✅ scroll UX
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      }, 200);
+
     } catch (error) {
-      setLoading(false);
-      if (error.response && error.response.status === 401) {
+      if (error.response?.status === 401) {
         toast.error("You are not authorized. Please log in.");
         navigate("/auth");
         return;
       }
+
       toast.error(error.response?.data?.error || "Failed to generate AI prompt.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // 2. Save generated prompt to backend
+  // 🔥 Save Prompt
   const handleSavePrompt = async () => {
     if (!generatedContent || saving) return;
+
     setSaving(true);
     try {
       await API.post("/api/prompts", {
@@ -58,77 +76,80 @@ const Dashboard = () => {
         content: generatedContent,
         category: "Other",
         isPublic: false
-      }, { withCredentials: true });
-      
+      });
+
       toast.success("Prompt saved to your Vault!");
+
+      // ✅ clean state
       setPromptTitle("");
       setGeneratedContent("");
+
       navigate("/myvault"); 
+
     } catch (error) {
-      if (error.response && error.response.status === 401) {
+      if (error.response?.status === 401) {
         toast.error("Session expired. Please log in.");
         navigate("/auth");
         return;
       }
+
       toast.error("Failed to save prompt.");
     } finally {
       setSaving(false);
     }
   };
 
-  // 3. Improve Generated Prompt using Backend API (/api/ai/improve)
+  // 🔥 Improve Generated
   const handleImprovePrompt = async () => {
     if (!generatedContent || improving) return;
+
     setImproving(true);
     try {
-      toast.info("Improving prompt with AI...");
-      
       const response = await API.post("/api/ai/improve", { 
         content: generatedContent 
-      }, { 
-        withCredentials: true 
       });
 
-      setGeneratedContent(response.data.improved);
+      setGeneratedContent(response.data?.improved || generatedContent);
+
       toast.success("Prompt improved successfully!");
+
     } catch (error) {
-      console.error("Improve error:", error);
-      if (error.response && error.response.status === 401) {
+      if (error.response?.status === 401) {
         toast.error("You are not authorized. Please log in.");
         navigate("/auth");
         return;
       }
+
       toast.error("Failed to improve prompt.");
     } finally {
       setImproving(false);
     }
   };
 
-  // 4. Quick Improve for Custom User Input (Standalone Improve API)
+  // 🔥 Custom Improve
   const handleCustomImprove = async () => {
     if (!customInput.trim() || customImproving) {
       toast.warning("Please enter some text to improve!");
       return;
     }
+
     setCustomImproving(true);
     try {
-      toast.info("Improving your custom prompt...");
-      
       const response = await API.post("/api/ai/improve", { 
         content: customInput 
-      }, { 
-        withCredentials: true 
       });
 
-      setImprovedCustomContent(response.data.improved);
+      setImprovedCustomContent(response.data?.improved || "");
+
       toast.success("Custom prompt improved successfully!");
+
     } catch (error) {
-      console.error("Custom improve error:", error);
-      if (error.response && error.response.status === 401) {
+      if (error.response?.status === 401) {
         toast.error("You are not authorized. Please log in.");
         navigate("/auth");
         return;
       }
+
       toast.error("Failed to improve custom prompt.");
     } finally {
       setCustomImproving(false);
@@ -136,7 +157,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="h-full w-full bg-[#F4F7F6] p-4 md:p-6 flex flex-col justify-between gap-4 overflow-y-auto">
+  <div className="h-full w-full bg-[#F4F7F6] p-4 md:p-6 flex flex-col justify-between gap-4 overflow-y-auto">
       
       {/* Top Section: AI Workspace & Sidebar Stats Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
