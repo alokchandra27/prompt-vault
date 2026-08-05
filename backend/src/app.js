@@ -13,8 +13,21 @@ ConnectToDB();
 app.use(express.json())
 app.use(cookieParser())
 
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://prompt-vault-xi-umber.vercel.app" 
+];
+
 app.use(cors({
-  origin: "http://localhost:5173" || "https://prompt-vault-xi-umber.vercel.app/",
+  origin: function (origin, callback) {
+    // Postman ya server-to-server requests ke liye jinka origin nahi hota
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error('CORS policy violation: This origin is not allowed.'), false);
+    }
+    return callback(null, true);
+  },
   credentials: true,
 }))
 
