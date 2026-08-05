@@ -2,12 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- ✅ Favicon (multiple resolutions for best clarity) -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/note-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/note-32.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/note-64.png" />
+
+    <!-- ✅ Optional (high-res fallback) -->
+    <link rel="icon" type="image/png" href="/note.png" />
+
+    <!-- ✅ Mobile / Apple support -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/note-180.png" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+
+    <title>PromptVault</title>
   </head>
+
   <body>
     <div id="root"></div>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
