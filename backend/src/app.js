@@ -9,6 +9,9 @@ const cookieParser = require("cookie-parser")
 const cors = require("cors")
 
 const app = express();
+// (Express ko batane ke liye ki yeh proxy ke peeche chal raha hai)
+app.set("trust proxy", 1)
+
 ConnectToDB();
 app.use(express.json())
 app.use(cookieParser())
