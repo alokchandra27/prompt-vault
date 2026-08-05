@@ -12,15 +12,16 @@ const app = express();
 ConnectToDB();
 app.use(express.json())
 app.use(cookieParser())
+
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: "http://localhost:5173" || "https://prompt-vault-xi-umber.vercel.app/",
   credentials: true,
 }))
 
 app.use("/api/auth",authRoutes)
 app.use("/api/prompts", promptRoutes)
 app.use("/api/ai", aiRoutes);
-app.use("/api/export", exportRoutes); 
+app.use("/api/export", exportRoutes);
 
 
 module.exports = app;

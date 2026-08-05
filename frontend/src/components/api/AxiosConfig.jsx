@@ -1,12 +1,12 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Axios instance create kar rahe hain
 const API = axios.create({
-  baseURL: 'http://localhost:3000', // Yahan apne backend ki base URL daal dena
-  withCredentials: true, // Cookies ko browser mein save aur send karne ke liye bohot zaroori hai
+  baseURL: "https://prompt-vault-backend-nmab.onrender.com", // Yahan meri api ki  backend ki base URL hai
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
+  withCredentials: true, // Agar aapko cookies bhejni hain toh ye zaruri hai
 });
 
 // Response interceptor (optional: agar error handle karna ho)
@@ -18,7 +18,7 @@ API.interceptors.response.use(
       console.log("Session expired or unauthorized");
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default API;

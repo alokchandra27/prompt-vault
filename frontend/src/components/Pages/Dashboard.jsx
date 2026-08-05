@@ -24,23 +24,20 @@ const Dashboard = () => {
   const [improvedCustomContent, setImprovedCustomContent] = useState("");
   const [customImproving, setCustomImproving] = useState(false);
 
+  const extractTextContent = (resData) => {
+    const raw =
+      resData?.prompt?.content || resData?.improved || resData?.generated;
 
-const extractTextContent = (resData) => {
-  const raw =
-    resData?.prompt?.content ||
-    resData?.improved ||
-    resData?.generated;
+    if (!raw) return "";
 
-  if (!raw) return "";
+    if (typeof raw === "string") return raw;
 
-  if (typeof raw === "string") return raw;
+    if (typeof raw === "object") {
+      return raw.content || raw.description || "";
+    }
 
-  if (typeof raw === "object") {
-    return raw.content || raw.description || "";
-  }
-
-  return "";
-};
+    return "";
+  };
 
   // 🔥 Generate AI
   const handleGenerateAI = async () => {
@@ -200,22 +197,25 @@ const extractTextContent = (resData) => {
               <label className="text-xs font-bold text-gray-600">
                 Prompt Topic / Title
               </label>
-              <div className="flex gap-2">
+              {/* Mobile par flex-col aur choti/badi screen par flex-row taaki overflow na ho */}
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   placeholder="e.g. YouTube script writer for tech videos..."
                   value={promptTitle}
                   onChange={(e) => setPromptTitle(e.target.value)}
                   disabled={loading || saving}
-                  className="bg-gray-100 h-12 flex-1 rounded-2xl px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-[#FF9E20] disabled:opacity-50"
+                  className="bg-gray-100  flex-1 rounded-2xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-[#FF9E20] disabled:opacity-50"
                 />
                 <button
                   onClick={handleGenerateAI}
                   disabled={loading || saving}
-                  className="h-12 px-5 bg-[#FF9E20] text-white rounded-2xl font-bold text-sm flex items-center gap-2 shadow-md hover:bg-[#e88d15] transition cursor-pointer disabled:opacity-50"
+                  className="h-12 w-full sm:w-auto px-5 bg-[#FF9E20] text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shrink-0 shadow-md hover:bg-[#e88d15] transition cursor-pointer disabled:opacity-50"
                 >
-                  <Wand2 size={18} />
-                  <span>{loading ? "Generating..." : "Generate"}</span>
+                  <Wand2 size={18} className="shrink-0" />
+                  <span className="truncate">
+                    {loading ? "Generating..." : "Generate"}
+                  </span>
                 </button>
               </div>
             </div>
@@ -232,7 +232,7 @@ const extractTextContent = (resData) => {
                 </div>
 
                 {/* Action Buttons: Improve with AI & Save to Vault */}
-                <div className="flex justify-between items-center mt-2">
+                <div className="flex flex-wrap justify-between items-center gap-2 mt-2">
                   <button
                     onClick={handleImprovePrompt}
                     disabled={improving}
@@ -258,7 +258,6 @@ const extractTextContent = (resData) => {
             )}
           </div>
         </div>
-
 
         <div className="bg-[#203A3E] text-white rounded-3xl p-5 md:p-6 shadow-sm flex flex-col justify-between gap-4 relative overflow-hidden">
           <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-white/5 rounded-full pointer-events-none" />
