@@ -7,49 +7,59 @@ const CreatePromptForm = ({ onPromptCreated }) => {
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
 
-  // Sirf AI assist ke liye states rakhi hain taaki typing smooth chale
+
   const [aiContent, setAiContent] = useState("");
   const [aiTitle, setAiTitle] = useState("");
 
-  // AI Assist optional helper
+
   const handleAIAssist = () => {
-    if (!aiTitle) {
+    if (!aiTitle.trim()) {
       toast.warning("Pehle title likho, tabhi AI content generate karega!");
       return;
     }
+
     setAiLoading(true);
+
     setTimeout(() => {
       setAiContent(
-        `Expert prompt structure for "${aiTitle}":\n1. Role: Act as an expert.\n2. Context: Provide accurate results.\n3. Output format: Clean and structured.`
+        `Expert prompt structure for "${aiTitle}":\n\n1. Role: Act as an expert.\n2. Context: Provide accurate results.\n3. Output format: Clean and structured.`
       );
       setAiLoading(false);
       toast.success("AI generated content successfully!");
-    }, 1000);
+    }, 800);
   };
 
-  // Submit Handler using native new FormData(e.target)
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!aiTitle.trim() || !aiContent.trim()) {
+      toast.warning("Title aur Content required hai!");
+      return;
+    }
+
     setLoading(true);
 
-    const data = new FormData(e.target);
+    const form = new FormData(e.target);
 
     const payload = {
-      title: data.get("title"),
-      content: data.get("content"),
-      category: data.get("category"), // Select dropdown se direct value uthegi
-      isPublic: data.get("isPublic") === "on", // Checkbox handling
+      title: aiTitle, 
+      content: aiContent,
+      category: form.get("category"),
+      isPublic: form.get("isPublic") === "on",
     };
 
     try {
       const response = await API.post("/api/prompts", payload, {
         withCredentials: true,
       });
+
       toast.success(response.data.message || "Prompt created successfully!");
 
-      e.target.reset();
+      // Reset
       setAiContent("");
       setAiTitle("");
+      e.target.reset();
 
       if (onPromptCreated) onPromptCreated();
     } catch (error) {
@@ -63,7 +73,7 @@ const CreatePromptForm = ({ onPromptCreated }) => {
   return (
     <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm flex flex-col gap-6 w-full border border-gray-100">
       
-      {/* Form Header */}
+      {/* Header */}
       <div className="flex justify-between items-center border-b pb-4">
         <div className="flex flex-col gap-1">
           <h3 className="text-xl font-bold text-[#203A3E] flex items-center gap-2">
@@ -79,18 +89,19 @@ const CreatePromptForm = ({ onPromptCreated }) => {
           type="button"
           onClick={handleAIAssist}
           disabled={aiLoading}
-          className="flex items-center gap-1.5 text-xs font-bold text-purple-600 bg-purple-50 px-4 py-2 rounded-xl hover:bg-purple-100 transition cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-1.5 text-xs font-bold text-purple-600 bg-purple-50 px-4 py-2 rounded-xl hover:bg-purple-100 transition disabled:opacity-50"
         >
           <Bot size={16} />
           {aiLoading ? "Thinking..." : "AI Assist ✨"}
         </button>
       </div>
 
-      {/* Main Form */}
+      {/* Form */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
-          {/* Title Field */}
+          {/* Title */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-gray-600">
               Title <span className="text-red-500">*</span>
@@ -106,13 +117,13 @@ const CreatePromptForm = ({ onPromptCreated }) => {
             />
           </div>
 
-          {/* Category Field (Matching Schema Enum Values Exactly) */}
+          {/* Category */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-gray-600">Category</label>
             <select
               name="category"
               defaultValue="Other"
-              className="bg-gray-100 h-12 rounded-xl px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-[#FF9E20] cursor-pointer"
+              className="bg-gray-100 h-12 rounded-xl px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-[#FF9E20]"
             >
               <option value="Fitness">Fitness</option>
               <option value="Motivation">Motivation</option>
@@ -127,44 +138,46 @@ const CreatePromptForm = ({ onPromptCreated }) => {
 
         </div>
 
-        {/* Content Field */}
+        {/* Content */}
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-bold text-gray-600">
             Content <span className="text-red-500">*</span>
           </label>
           <textarea
             name="content"
-            rows={4}
+            rows={5}
             placeholder="Write your prompt content here..."
             value={aiContent}
             onChange={(e) => setAiContent(e.target.value)}
-            className="bg-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:ring-2 focus:ring-[#FF9E20] resize-none"
+            className="bg-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:ring-2 focus:ring-[#FF9E20] resize-none min-h-[120px]"
             required
           />
         </div>
 
-        {/* Footer options: Public/Private checkbox & Submit button */}
+        {/* Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-2">
+
           <label className="flex items-center gap-3 cursor-pointer bg-gray-50 px-4 py-3 rounded-xl border border-gray-200 w-full md:w-auto">
             <input
               type="checkbox"
               name="isPublic"
-              className="w-4 h-4 accent-[#FF9E20] rounded cursor-pointer"
+              className="w-4 h-4 accent-[#FF9E20]"
             />
             <div className="flex items-center gap-2 text-xs font-bold text-gray-700">
               <Globe size={16} className="text-gray-500" />
-              <span>Make Public (Visible in Community)</span>
+              <span>Make Public</span>
             </div>
           </label>
 
           <button
             type="submit"
             disabled={loading}
-            className="h-12 w-full md:w-auto px-8 bg-[#FF9E20] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#e88d15] transition cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+            className="h-12 w-full md:w-auto px-8 bg-[#FF9E20] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#e88d15] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send size={16} />
             <span>{loading ? "Creating..." : "Save Prompt"}</span>
           </button>
+
         </div>
       </form>
     </div>

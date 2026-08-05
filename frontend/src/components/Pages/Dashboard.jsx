@@ -1,4 +1,11 @@
-import { Sparkles, Bot, ArrowUpRight, FolderKanban, Wand2, Zap } from "lucide-react";
+import {
+  Sparkles,
+  Bot,
+  ArrowUpRight,
+  FolderKanban,
+  Wand2,
+  Zap,
+} from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/AxiosConfig";
@@ -17,6 +24,24 @@ const Dashboard = () => {
   const [improvedCustomContent, setImprovedCustomContent] = useState("");
   const [customImproving, setCustomImproving] = useState(false);
 
+
+const extractTextContent = (resData) => {
+  const raw =
+    resData?.prompt?.content ||
+    resData?.improved ||
+    resData?.generated;
+
+  if (!raw) return "";
+
+  if (typeof raw === "string") return raw;
+
+  if (typeof raw === "object") {
+    return raw.content || raw.description || "";
+  }
+
+  return "";
+};
+
   // 🔥 Generate AI
   const handleGenerateAI = async () => {
     if (!promptTitle.trim()) {
@@ -26,32 +51,27 @@ const Dashboard = () => {
 
     setLoading(true);
     try {
-      const response = await API.post("/api/ai/generate", { 
+      const response = await API.post("/api/ai/generate", {
         userInput: promptTitle,
-        isPublic: false 
+        isPublic: false,
       });
 
-      const fullPrompt =
-        response.data?.prompt?.content ||
-        response.data?.generated ||
-        "";
+      const parsedText = extractTextContent(response.data);
 
-      if (!fullPrompt) {
+      if (!parsedText) {
         toast.error("Empty response from AI");
         return;
       }
 
-     if (typeof fullPrompt === "object") {
-  setGeneratedContent(fullPrompt.content || JSON.stringify(fullPrompt));
-} else {
-  setGeneratedContent(fullPrompt);
-}
+      setGeneratedContent(parsedText);
 
       // ✅ scroll UX
       setTimeout(() => {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
       }, 200);
-
     } catch (error) {
       if (error.response?.status === 401) {
         toast.error("You are not authorized. Please log in.");
@@ -59,7 +79,9 @@ const Dashboard = () => {
         return;
       }
 
-      toast.error(error.response?.data?.error || "Failed to generate AI prompt.");
+      toast.error(
+        error.response?.data?.error || "Failed to generate AI prompt.",
+      );
     } finally {
       setLoading(false);
     }
@@ -75,17 +97,15 @@ const Dashboard = () => {
         title: promptTitle,
         content: generatedContent,
         category: "Other",
-        isPublic: false
+        isPublic: false,
       });
 
       toast.success("Prompt saved to your Vault!");
 
-      // ✅ clean state
       setPromptTitle("");
       setGeneratedContent("");
 
-      navigate("/myvault"); 
-
+      navigate("/myvault");
     } catch (error) {
       if (error.response?.status === 401) {
         toast.error("Session expired. Please log in.");
@@ -105,14 +125,14 @@ const Dashboard = () => {
 
     setImproving(true);
     try {
-      const response = await API.post("/api/ai/improve", { 
-        content: generatedContent 
+      const response = await API.post("/api/ai/improve", {
+        content: generatedContent,
       });
 
-      setGeneratedContent(response.data?.improved || generatedContent);
+      const parsedText = extractTextContent(response.data);
+      setGeneratedContent(parsedText || generatedContent);
 
       toast.success("Prompt improved successfully!");
-
     } catch (error) {
       if (error.response?.status === 401) {
         toast.error("You are not authorized. Please log in.");
@@ -135,14 +155,14 @@ const Dashboard = () => {
 
     setCustomImproving(true);
     try {
-      const response = await API.post("/api/ai/improve", { 
-        content: customInput 
+      const response = await API.post("/api/ai/improve", {
+        content: customInput,
       });
 
-      setImprovedCustomContent(response.data?.improved || "");
+      const parsedText = extractTextContent(response.data);
+      setImprovedCustomContent(parsedText);
 
       toast.success("Custom prompt improved successfully!");
-
     } catch (error) {
       if (error.response?.status === 401) {
         toast.error("You are not authorized. Please log in.");
@@ -157,11 +177,9 @@ const Dashboard = () => {
   };
 
   return (
-  <div className="h-full w-full bg-[#F4F7F6] p-4 md:p-6 flex flex-col justify-between gap-4 overflow-y-auto">
-      
+    <div className="h-full w-full bg-[#F4F7F6] p-4 md:p-6 flex flex-col justify-between gap-4 overflow-y-auto">
       {/* Top Section: AI Workspace & Sidebar Stats Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        
         {/* Left/Main Column: AI Prompt Generator Workspace */}
         <div className="lg:col-span-2 bg-white rounded-3xl p-5 md:p-6 shadow-sm flex flex-col justify-between gap-4">
           <div className="flex flex-col gap-1">
@@ -172,13 +190,16 @@ const Dashboard = () => {
               Create & Generate AI Prompts
             </h1>
             <p className="text-xs text-gray-400">
-              Type your topic below and let AI craft a professional, ready-to-use prompt instantly.
+              Type your topic below and let AI craft a professional,
+              ready-to-use prompt instantly.
             </p>
           </div>
 
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-gray-600">Prompt Topic / Title</label>
+              <label className="text-xs font-bold text-gray-600">
+                Prompt Topic / Title
+              </label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -201,11 +222,15 @@ const Dashboard = () => {
 
             {generatedContent && (
               <div className="flex flex-col gap-1 animate-in fade-in duration-300">
-                <label className="text-[11px] font-bold text-gray-600">Generated Result</label>
+                <label className="text-[11px] font-bold text-gray-600">
+                  Generated Result
+                </label>
                 <div className="bg-gray-50 border border-gray-200 rounded-2xl p-3 text-xs font-mono text-gray-700 max-h-[120px] overflow-y-auto whitespace-pre-wrap">
-                  {generatedContent}
+                  {typeof generatedContent === "object"
+                    ? JSON.stringify(generatedContent, null, 2)
+                    : generatedContent}
                 </div>
-                
+
                 {/* Action Buttons: Improve with AI & Save to Vault */}
                 <div className="flex justify-between items-center mt-2">
                   <button
@@ -214,7 +239,9 @@ const Dashboard = () => {
                     className="h-10 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-xl font-bold text-xs transition cursor-pointer px-4 flex items-center gap-1.5 disabled:opacity-50"
                   >
                     <Sparkles size={14} />
-                    <span>{improving ? "Improving..." : "Improve with AI ✨"}</span>
+                    <span>
+                      {improving ? "Improving..." : "Improve with AI ✨"}
+                    </span>
                   </button>
 
                   <button
@@ -222,7 +249,9 @@ const Dashboard = () => {
                     disabled={saving}
                     className="h-10 bg-[#203A3E] text-white rounded-xl font-bold text-xs shadow hover:bg-black transition cursor-pointer px-5 disabled:opacity-50 flex items-center gap-1.5"
                   >
-                    <span>{saving ? "Saving to Vault..." : "Save to Vault 🚀"}</span>
+                    <span>
+                      {saving ? "Saving to Vault..." : "Save to Vault 🚀"}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -230,7 +259,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right Column: Vault Status Sidebar */}
+
         <div className="bg-[#203A3E] text-white rounded-3xl p-5 md:p-6 shadow-sm flex flex-col justify-between gap-4 relative overflow-hidden">
           <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-white/5 rounded-full pointer-events-none" />
 
@@ -250,32 +279,33 @@ const Dashboard = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => navigate('/myvault')}
+            <button
+              onClick={() => navigate("/myvault")}
               className="flex-1 h-11 bg-white/10 text-white rounded-xl text-xs font-bold hover:bg-white/20 transition cursor-pointer flex items-center justify-center gap-2"
             >
               <FolderKanban size={16} /> My Vault
             </button>
-            <button 
-              onClick={() => navigate('/community')}
+            <button
+              onClick={() => navigate("/community")}
               className="h-11 w-11 bg-[#FF9E20] rounded-xl flex items-center justify-center text-white hover:bg-[#e88d15] transition cursor-pointer"
             >
               <ArrowUpRight size={18} />
             </button>
           </div>
         </div>
-
       </div>
 
-      {/* Quick AI Improver Section (Standalone Improve Feature) */}
       <div className="bg-white rounded-3xl p-5 md:p-6 shadow-sm flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-0.5 rounded-full w-max flex items-center gap-1">
             <Zap size={12} /> Quick Improver
           </span>
-          <h2 className="text-lg font-bold text-[#203A3E]">Enhance Any Existing Prompt</h2>
+          <h2 className="text-lg font-bold text-[#203A3E]">
+            Enhance Any Existing Prompt
+          </h2>
           <p className="text-xs text-gray-400">
-            Paste your raw or rough prompt below and let the AI polish it into a high-performance prompt.
+            Paste your raw or rough prompt below and let the AI polish it into a
+            high-performance prompt.
           </p>
         </div>
 
@@ -295,14 +325,22 @@ const Dashboard = () => {
             className="h-11 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs transition cursor-pointer self-start px-5 flex items-center gap-2 shadow-sm disabled:opacity-50"
           >
             <Sparkles size={16} />
-            <span>{customImproving ? "Polishing Prompt..." : "Improve This Prompt ✨"}</span>
+            <span>
+              {customImproving
+                ? "Polishing Prompt..."
+                : "Improve This Prompt ✨"}
+            </span>
           </button>
 
           {improvedCustomContent && (
             <div className="flex flex-col gap-1 mt-2 animate-in fade-in duration-300">
-              <label className="text-[11px] font-bold text-gray-600">Improved Output</label>
+              <label className="text-[11px] font-bold text-gray-600">
+                Improved Output
+              </label>
               <div className="bg-purple-50/50 border border-purple-100 rounded-2xl p-3 text-xs font-mono text-gray-700 max-h-[120px] overflow-y-auto whitespace-pre-wrap">
-                {improvedCustomContent}
+                {typeof improvedCustomContent === "object"
+                  ? JSON.stringify(improvedCustomContent, null, 2)
+                  : improvedCustomContent}
               </div>
             </div>
           )}
@@ -313,7 +351,6 @@ const Dashboard = () => {
       <div className="w-full">
         <CreatePromptForm />
       </div>
-
     </div>
   );
 };

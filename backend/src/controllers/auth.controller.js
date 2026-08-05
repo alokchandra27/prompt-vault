@@ -19,16 +19,19 @@ async function userRegister(req, res) {
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
-  res.cookie("token", token);
+res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,        
+    sameSite: "none",    
+    maxAge: 12 * 60 * 60 * 1000 // 12 hours
+});
 
-  const safeUser = await userModel
-  .findById(user._id)
-  .select("-password");
+  const safeUser = await userModel.findById(user._id).select("-password");
 
   res.status(201).json({
     message: "User Registered Successfully",
-    user:safeUser,
-    token,
+    user: safeUser,
+    // token,
   });
 }
 
@@ -61,15 +64,18 @@ async function userLogin(req, res) {
     { expiresIn: "12h" },
   );
 
-  res.cookie("token", token);
+ res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,        
+    sameSite: "none",    
+    maxAge: 12 * 60 * 60 * 1000 // 12 hours
+});
 
-  const safeUser = await userModel
-  .findById(user._id)
-  .select("-password");
+  const safeUser = await userModel.findById(user._id).select("-password");
 
   res.status(200).json({
     message: "User Logged In Successfully",
-    user:safeUser,
+    user: safeUser,
   });
 }
 
@@ -107,12 +113,10 @@ function userLogout(req, res) {
   });
 }
 
-
-
 module.exports = {
   userRegister,
   userLogin,
   getUser,
   userLogout,
-  updateUser
+  updateUser,
 };

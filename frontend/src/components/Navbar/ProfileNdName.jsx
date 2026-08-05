@@ -4,8 +4,8 @@ import API from '../api/AxiosConfig';
 
 const ProfileNdName = () => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // लोडिंग ट्रैक करने के लिए स्टेट
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // ✅ FIX
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -15,23 +15,19 @@ const ProfileNdName = () => {
       } catch (error) {
         console.error("Error fetching profile:", error);
       } finally {
-        setLoading(false); // API रिक्वेस्ट पूरी होने पर लोडिंग बंद करें
+        setLoading(false); 
       }
     };
     fetchUserProfile();
-  }, [navigate]);
+  }, []); // ✅ FIX
 
-  // 1. डमी स्ट्रक्चर (Skeleton Loader) जब डेटा लोड हो रहा हो
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center gap-5 mt-8 animate-pulse">
         <div className="flex flex-col gap-2 items-center justify-center mb-5">
-          {/* डमी गोल इमेज */}
-          <div className="rounded-full bg-gray-300 h-24 w-24"></div>
+         <div className="rounded-full bg-gray-300 h-24 w-24"></div>
           <div className="flex flex-col items-center justify-center gap-2 mt-2">
-            {/* डमी नाम की लाइन */}
             <div className="h-4 w-32 bg-gray-300 rounded"></div>
-            {/* डमी ईमेल की लाइन */}
             <div className="h-3 w-48 bg-gray-300 rounded"></div>
           </div>
         </div>
@@ -39,7 +35,6 @@ const ProfileNdName = () => {
     );
   }
 
-  // 2. असली स्ट्रक्चर जब डेटा सफलतापूर्वक मिल जाए
   return (
     <div 
       className="flex flex-col items-center justify-center gap-5 mt-8 cursor-pointer"

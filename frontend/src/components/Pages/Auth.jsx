@@ -1,147 +1,202 @@
-// import axios from "axios";
 import { ArrowRight, Lock, Mail, User } from "lucide-react";
 import React, { useState } from "react";
-import API from "../api/AxiosConfig"
-import { toast, ToastContainer } from "react-toastify";
+import API from "../api/AxiosConfig";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+
 const Auth = () => {
   const navigate = useNavigate();
-  // const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const submitHandler = (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target)
-    const data = Object.fromEntries(formData)
-    console.log(data)
-    // console.log(data);
-    handleAuth(data)
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
 
-  }
+    if (!data.username || !data.password) {
+      toast.info("Please fill in your username and password");
+      return;
+    }
 
-  const handleAuth = async (data) => {
+    if (!isLogin && !data.name) {
+      toast.info("Your name helps personalize your experience 🙂");
+      return;
+    }
+
+    handleAuth(data, e);
+  };
+
+  const handleAuth = async (data, e) => {
     const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+
     try {
+      setLoading(true);
+
+      const toastId = toast.loading(
+        isLogin ? "Signing you in..." : "Creating your account..."
+      );
+
       const response = await API.post(endpoint, data, {
         withCredentials: true,
       });
-      console.log(response.data);
-      toast.success(response.data.message);
+
+  
+      toast.update(toastId, {
+        render: isLogin
+          ? `Welcome back, ${response?.data?.user?.name || "User"} 👋`
+          : "Account created successfully 🎉",
+        type: "success",
+        isLoading: false,
+        autoClose: 2500,
+      });
+
+      e.target.reset();
       navigate("/");
     } catch (error) {
-      console.error(error);
-      toast.error(error.response.data.message || "An error occurred");
+      toast.dismiss();
+
+      const message =
+        error?.response?.data?.message === "Invalid credentials"
+          ? "That doesn’t look right. Try again."
+          : error?.response?.data?.message ||
+            "Something went wrong. Please try again.";
+
+      toast.error(message);
+    } finally {
+      setLoading(false);
     }
-    
-  }
+  };
 
   return (
     <div
-      className=" text-black w-full h-full flex justify-center items-center p-4"
+      className="text-black w-full h-full flex justify-center items-center p-4"
       style={{
-        backgroundImage: "url('/photo-1513002749550-c59d786b8e6c.avif')",
+        backgroundImage:
+          "url('/photo-1513002749550-c59d786b8e6c.avif')",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
-      {/* Card Container: Fixed for desktop (80%/70%), Full for mobile */}
       <div className="h-auto md:h-[80%] w-full md:w-[70%] bg-white rounded-2xl flex flex-col md:flex-row overflow-hidden shadow-2xl">
-        {/* Left Side: Image (Mobile par upar, Desktop par side mein) */}
+        
+        {/* Left Image */}
         <div className="w-full md:w-1/2 h-64 md:h-full bg-amber-50 p-2">
           <div className="bg-emerald-700 h-full rounded-2xl overflow-hidden">
             <img
               className="h-full w-full object-cover"
               src="https://i.pinimg.com/1200x/6e/6f/ab/6e6fabb9dc098efb68ad1d01846d5f59.jpg"
-              alt="Register Visual"
+              alt="Auth Visual"
             />
           </div>
         </div>
 
-        {/* Right Side: Form */}
-        <div className="w-full md:w-1/2 h-auto md:h-full p-10 flex flex-col justify-center bg-white">
-
-          {/*Heading and Description */}
+        {/* Right Form */}
+        <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center bg-white">
 
           <h1 className="text-2xl font-bold text-[#1D2128]">
-            {isLogin ? 'Welcome Back to PromptVault!' : 'Create Your Account'}
+            {isLogin ? "Welcome Back to PromptVault!" : "Create Your Account"}
           </h1>
 
-          <p className= "text-gray-500 mt-2 text-sm mb-6">
-            {isLogin ? 'Enter your details to access your vault' : 'Start managing and sharing your prompts with ease'}
-            </p>
+          <p className="text-gray-500 mt-2 text-sm mb-6">
+            {isLogin
+              ? "Enter your details to access your vault"
+              : "Start managing and sharing your prompts with ease"}
+          </p>
 
-          <form onSubmit={(e)=>{
-            submitHandler(e)
-          }
-          }  className="flex flex-col gap-4">
+          <form onSubmit={submitHandler} className="flex flex-col gap-4">
 
-          {!isLogin && (
+            {!isLogin && (
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+                  Full Name
+                </label>
+                <div className="flex items-center gap-3 bg-[#F4F2F2] px-4 py-3 rounded-xl border border-gray-200">
+                  <User size={18} className="text-gray-400" />
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    placeholder="Samuel Johnson"
+                    autoComplete="name"
+                    className="bg-transparent outline-none w-full text-sm"
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Full Name</label>
-              <div className="flex items-center gap-3 bg-[#F4F2F2] px-4 py-3 rounded-xl border border-gray-200 focus-within:border-[#203A3E] transition">
-                <User size={18} className="text-gray-400" />
-                <input 
-                  type="text" 
-                  placeholder="Samuel Johnson" 
-                  name="name"
-                  className="bg-transparent border-none outline-none w-full text-sm text-[#1D2128]"
+              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+                Username
+              </label>
+              <div className="flex items-center gap-3 bg-[#F4F2F2] px-4 py-3 rounded-xl border border-gray-200">
+                <Mail size={18} className="text-gray-400" />
+                <input
+                  type="text"
+                  name="username"
+                  required
+                  placeholder="promptVault123"
+                  autoComplete="username"
+                  className="bg-transparent outline-none w-full text-sm"
                 />
               </div>
             </div>
-          )}
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Username</label>
-            <div className="flex items-center gap-3 bg-[#F4F2F2] px-4 py-3 rounded-xl border border-gray-200 focus-within:border-[#203A3E] transition">
-              <Mail size={18} className="text-gray-400" />
-              <input 
-                type="username"
-                name="username" 
-                placeholder="promptVault123" 
-                className="bg-transparent border-none outline-none w-full text-sm text-[#1D2128]"
-              />
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+                Password
+              </label>
+              <div className="flex items-center gap-3 bg-[#F4F2F2] px-4 py-3 rounded-xl border border-gray-200">
+                <Lock size={18} className="text-gray-400" />
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  className="bg-transparent outline-none w-full text-sm"
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Password</label>
-            <div className="flex items-center gap-3 bg-[#F4F2F2] px-4 py-3 rounded-xl border border-gray-200 focus-within:border-[#203A3E] transition">
-              <Lock size={18} className="text-gray-400" />
-              <input 
-                type="password" 
-                name="password"
-                placeholder="••••••••" 
-                className="bg-transparent border-none outline-none w-full text-sm text-[#1D2128]"
-              />
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full mt-2 flex items-center justify-center gap-2 py-3.5 bg-[#203A3E] text-white rounded-xl font-medium hover:bg-[#284b50] transition shadow-md disabled:opacity-70"
+            >
+              {loading
+                ? isLogin
+                  ? "Signing in..."
+                  : "Creating account..."
+                : isLogin
+                ? "Sign In"
+                : "Create an Account"}
+              <ArrowRight size={18} />
+            </button>
+
+            {/* Toggle */}
+            <div className="text-center mt-6">
+              <p className="text-sm text-gray-500">
+                {isLogin
+                  ? "Don't have an account?"
+                  : "Already have an account?"}
+                <button
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    toast.dismiss(); // ✅ prevent clutter
+                  }}
+                  type="button"
+                  className="text-[#203A3E] font-semibold ml-1 hover:underline"
+                >
+                  {isLogin ? "Register" : "Login"}
+                </button>
+              </p>
             </div>
-          </div>
 
-          <button className="w-full mt-2 flex items-center justify-center gap-2 py-3.5 bg-[#203A3E] text-white rounded-xl font-medium hover:bg-[#284b50] transition shadow-md"
-          type="submit">
-          {isLogin ? 'Sign In' : 'Create an Account'}
-          <ArrowRight size={18} />
-          </button>
-
-          {/* Toggle between Login and Register */}
-          <div className="text-center mt-6">
-            <p className="text-sm text-gray-500">
-              {isLogin? "Don't have an account?" : "Already have an account?"}
-              <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-[#203A3E] font-semibold ml-1 hover:underline"
-              type="button"
-              >
-                {isLogin ? 'Register' : 'Login'}
-              </button>
-            </p>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
-    </div>
-  
-            
-         
     </div>
   );
 };

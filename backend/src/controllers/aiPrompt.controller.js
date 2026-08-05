@@ -1,7 +1,6 @@
 const promptModel = require("../models/prompt.model");
 const { generateFullPrompt, improveContent } = require("../services/ai.service");
 
-// 🔵 GENERATE + SAVE
 async function generatePromptController(req, res) {
     try {
         const { userInput, isPublic } = req.body;
@@ -12,31 +11,42 @@ async function generatePromptController(req, res) {
 
         const aiData = await generateFullPrompt(userInput);
 
-        // 🔥 TAGS FORMAT FIX (#coding #ai ...)
+    
         let formattedTags = [];
         if (Array.isArray(aiData.tags)) {
-            formattedTags = aiData.tags.map(tag =>
-                tag.startsWith("#") ? tag : `#${tag}`
-            );
+            formattedTags = aiData.tags.map(tag => {
+                // Remove any leading bullets like *, -, or extra spaces
+                const cleanTag = tag.replace(/^[*-\s]+/, "").trim();
+                return cleanTag.startsWith("#") ? cleanTag : `#${cleanTag}`;
+            });
         } else if (typeof aiData.tags === "string") {
             formattedTags = aiData.tags
                 .split(",")
-                .map(tag => tag.trim())
-                .map(tag => tag.startsWith("#") ? tag : `#${tag}`);
+                .map(tag => {
+                    const cleanTag = tag.replace(/^[*-\s]+/, "").trim();
+                    return cleanTag.startsWith("#") ? cleanTag : `#${cleanTag}`;
+                });
         }
 
-        const newPrompt = await promptModel.create({
-            title: aiData.title,
-            content: aiData.content,
-            category: aiData.category,
-            tags: formattedTags, // ✅ updated
-            isPublic: isPublic || false,
-            user: req.user.id
-        });
+        // const newPrompt = await promptModel.create({
+        //     title: aiData.title,
+        //     content: aiData.content,
+        //     category: aiData.category,
+        //     tags: formattedTags, 
+        //     isPublic: isPublic || false,
+        //     user: req.user.id
+        // });
 
         return res.status(201).json({
             message: "Prompt generated successfully",
-            prompt: newPrompt
+            prompt: {
+                title: aiData.title,
+                content: aiData.content,
+                category: aiData.category,
+                tags: formattedTags,
+                isPublic: isPublic || false,
+                user: req.user.id
+            }
         });
 
     } catch (error) {
